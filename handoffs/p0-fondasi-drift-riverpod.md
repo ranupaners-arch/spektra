@@ -1,9 +1,9 @@
 # P0: Fondasi Spektra (Drift + Riverpod + Router)
 Status: DITUNDA (inti selesai, verifikasi penuh menunggu toolchain) · Service: spektra (Flutter) · Diperbarui: 2026-09-22 16:05
-Referensi: PLAN.md P0 · commit belum dibuat
+Referensi: PLAN.md P0 · commit f6b115b (P0) + 419911b (rename spektra) sudah push
 
 ## Sedang dikerjakan
-Inti P0 sudah selesai. Tersisa: commit + (opsional) tambah test repository
+Inti P0 sudah selesai & ter-push. Tersisa: (opsional) tambah test repository
 yang berjalan setelah toolchain mesin ini diperbaiki.
 
 ## Status terakhir (terbukti)
@@ -25,10 +25,9 @@ yang berjalan setelah toolchain mesin ini diperbaiki.
   isDone = getter status==done.
 
 ## Langkah berikutnya
-1. Commit P0 (handoffs/ ikut di-commit).
-2. P0 selanjutnya: tambah test repository in-memory drift (bisa jalan setelah
+1. P0 selanjutnya: tambah test repository in-memory drift (bisa jalan setelah
    toolchain mac diperbaiki, atau coba sebelum jika environment berubah).
-3. Lanjut P1: kanban board 4 kolom + deadline/reminder.
+2. Lanjut P1: kanban board 4 kolom + deadline/reminder.
 
 ## Jangan lakukan
 - Jangan seed data demo (empty state harus terlihat & teruji).
