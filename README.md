@@ -1,4 +1,4 @@
-# omnispace
+# Spektra
 
 A new Flutter project.
 

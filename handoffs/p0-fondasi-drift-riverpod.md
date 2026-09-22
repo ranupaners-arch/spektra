@@ -1,5 +1,5 @@
-# P0: Fondasi OmniSpace (Drift + Riverpod + Router)
-Status: DITUNDA (inti selesai, verifikasi penuh menunggu toolchain) · Service: omnispace (Flutter) · Diperbarui: 2026-09-22 16:05
+# P0: Fondasi Spektra (Drift + Riverpod + Router)
+Status: DITUNDA (inti selesai, verifikasi penuh menunggu toolchain) · Service: spektra (Flutter) · Diperbarui: 2026-09-22 16:05
 Referensi: PLAN.md P0 · commit belum dibuat
 
 ## Sedang dikerjakan

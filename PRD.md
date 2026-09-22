@@ -3,7 +3,7 @@ Berikut adalah **Product Requirements Document (PRD)** yang telah digabung dan d
 ---
 
 # 📄 PRODUCT REQUIREMENTS DOCUMENT (PRD)
-**Nama Produk:** OmniSpace (Working Title)
+**Nama Produk:** Spektra
 **Versi:** 1.1 (Master Document)
 **Tanggal:** 24 Mei 2024
 **Target User:** Mahasiswa yang juga *freelancer* / pekerja lepas (Student-Professional Hybrid).
@@ -46,8 +46,8 @@ Fitur dasar untuk manajemen proyek sehari-hari.
 ### B. Calendar & Time Management (Integrasi Google Calendar)
 Mengubah daftar tugas yang abstrak menjadi visualisasi waktu yang konkret.
 * **Two-Way Sync (Sinkronisasi Dua Arah):** 
-  * *Push:* Saat membuat *deadline* di OmniSpace, otomatis masuk ke Google Calendar.
-  * *Pull:* Jika *deadline* digeser di Google Calendar, OmniSpace otomatis memperbarui *deadline* di aplikasi.
+  * *Push:* Saat membuat *deadline* di Spektra, otomatis masuk ke Google Calendar.
+  * *Pull:* Jika *deadline* digeser di Google Calendar, Spektra otomatis memperbarui *deadline* di aplikasi.
 * **Color-Coded Calendar:** Setiap kategori proyek memiliki warna spesifik di Google Calendar agar mudah dibedakan.
 * **Time Blocking:** Fitur untuk memblokir waktu di kalender khusus untuk mengerjakan *task* tertentu (misal: "Fokus Ngoding Project Klien" selama 2 jam).
 * **Daily Briefing:** Notifikasi pagi yang merangkum apa yang harus dikerjakan hari ini berdasarkan jadwal kalender dan *task* yang *overdue*.
@@ -154,4 +154,4 @@ Mengubah catatan/materi proyek menjadi sesi kuiz interaktif.
 4. **Quiz Mode Offline:** Pastikan QR Code kuiz tetap bisa di-*scan* dan jawaban tersimpan di *local storage* jika internet di ruang kelas tiba-tiba mati, lalu di-*sync* saat koneksi kembali.
 
 ---
-*Dokumen ini dirancang agar OmniSpace tidak hanya menjadi alat catatan, tetapi menjadi Platform Manajemen Proyek Mini yang lengkap, menggantikan kebutuhan akan Trello/Notion (tracking), Canva/PPT (presentasi), dan Quizizz (kuiz) dalam satu ekosistem yang mulus.*
+*Dokumen ini dirancang agar Spektra tidak hanya menjadi alat catatan, tetapi menjadi Platform Manajemen Proyek Mini yang lengkap, menggantikan kebutuhan akan Trello/Notion (tracking), Canva/PPT (presentasi), dan Quizizz (kuiz) dalam satu ekosistem yang mulus.*

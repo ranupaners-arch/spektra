@@ -1,4 +1,4 @@
-# OMNISPACE: Rencana Implementasi
+# SPEKTRA: Rencana Implementasi
 
 **Tanggal disusun:** 2026-09-22
 **Dasar:** PRD.md v1.1

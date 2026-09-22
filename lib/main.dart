@@ -4,16 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/router.dart';
 
 void main() {
-  runApp(const ProviderScope(child: OmniSpaceApp()));
+  runApp(const ProviderScope(child: SpektraApp()));
 }
 
-class OmniSpaceApp extends StatelessWidget {
-  const OmniSpaceApp({super.key});
+class SpektraApp extends StatelessWidget {
+  const SpektraApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'OmniSpace',
+      title: 'Spektra',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),

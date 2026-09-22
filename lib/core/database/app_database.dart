@@ -49,11 +49,11 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
-  /// Native: file `omnispace.sqlite` di dokumen aplikasi.
+  /// Native: file `spektra.sqlite` di dokumen aplikasi.
   /// Web: OPFS/IndexedDB via sqlite3.wasm + drift_worker.js di folder web/.
   static DatabaseConnection _connection() {
     return driftDatabase(
-      name: 'omnispace',
+      name: 'spektra',
       web: DriftWebOptions(
         sqlite3Wasm: Uri.parse('sqlite3.wasm'),
         driftWorker: Uri.parse('drift_worker.js'),

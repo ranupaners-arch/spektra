@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "omnispace" "\0"
+            VALUE "FileDescription", "Spektra" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "omnispace" "\0"
+            VALUE "InternalName", "spektra" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "omnispace.exe" "\0"
-            VALUE "ProductName", "omnispace" "\0"
+            VALUE "OriginalFilename", "spektra.exe" "\0"
+            VALUE "ProductName", "Spektra" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

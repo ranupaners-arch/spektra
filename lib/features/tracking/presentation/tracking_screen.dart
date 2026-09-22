@@ -15,7 +15,7 @@ class TrackingScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('OmniSpace Dashboard'),
+        title: const Text('Spektra Dashboard'),
         centerTitle: true,
         elevation: 0,
       ),
