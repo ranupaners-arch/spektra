@@ -34,14 +34,17 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  go_router: ^14.0.0       # Navigasi & routing (penting untuk link presentasi nanti)
+  google_fonts: ^6.2.1     # Font aplikasi profesional & modern
+  flutter_riverpod: ^3.0.0 # State management
+  drift: ^2.30.0           # Database lokal (SQLite), relasional
+  drift_flutter: ^0.3.1    # Setup drift lintas platform (native + web)
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-    
-  go_router: ^14.0.0        # Untuk navigasi & routing yang rapi (penting untuk link presentasi)
-  google_fonts: ^6.2.1      # Agar font aplikasi terlihat lebih profesional & modern
-  cupertino_icons: ^1.0.8
+  drift_dev: ^2.30.0       # Codegen tabel drift
+  build_runner: ^2.4.0     # Menjalankan codegen drift
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

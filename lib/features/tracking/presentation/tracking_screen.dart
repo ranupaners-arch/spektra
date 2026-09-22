@@ -1,179 +1,130 @@
 import 'package:flutter/material.dart';
-import 'project_detail_screen.dart'; // Import halaman detail
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-// --- MODEL DATA ---
-class Task {
-  String name;
-  bool isDone;
-  Task({required this.name, required this.isDone});
-}
+import '../application/project_colors.dart';
+import '../application/tracking_providers.dart';
+import '../domain/tracking_models.dart';
 
-class Project {
-  final String title;
-  final String category;
-  final Color color;
-  List<Task> tasks;
-
-  Project({
-    required this.title,
-    required this.category,
-    required this.color,
-    required this.tasks,
-  });
-
-  double get progress {
-    if (tasks.isEmpty) return 0.0;
-    int completedTasks = tasks.where((task) => task.isDone).length;
-    return completedTasks / tasks.length;
-  }
-}
-
-// --- LAYAR UTAMA ---
-class TrackingScreen extends StatefulWidget {
+class TrackingScreen extends ConsumerWidget {
   const TrackingScreen({super.key});
 
   @override
-  State<TrackingScreen> createState() => _TrackingScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final projectsAsync = ref.watch(projectsProvider);
 
-class _TrackingScreenState extends State<TrackingScreen> {
-  final List<Project> _projects = [
-    Project(
-      title: 'Tugas Akhir Sistem Informasi',
-      category: 'Kuliah',
-      color: Colors.blue,
-      tasks: [
-        Task(name: 'Bab 1 Selesai', isDone: true),
-        Task(name: 'Presentasi', isDone: false),
-      ],
-    ),
-    Project(
-      title: 'Website Klien A',
-      category: 'Klien',
-      color: Colors.green,
-      tasks: [
-        Task(name: 'UI Design', isDone: true),
-        Task(name: 'Testing', isDone: false),
-      ],
-    ),
-  ];
-
-  void _toggleTask(int projectIndex, int taskIndex) {
-    setState(() {
-      _projects[projectIndex].tasks[taskIndex].isDone = 
-          !_projects[projectIndex].tasks[taskIndex].isDone;
-    });
-  }
-
-  void _showAddProjectDialog() {
-    final titleController = TextEditingController();
-    String selectedCategory = 'Kuliah';
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Tambah Proyek Baru'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Judul Proyek',
-                  hintText: 'Misal: Belajar Dart',
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                decoration: const InputDecoration(labelText: 'Kategori'),
-                items: ['Kuliah', 'Klien', 'Pribadi'].map((String category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedCategory = newValue!;
-                  });
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (titleController.text.isNotEmpty) {
-                  Color projectColor = Colors.blue;
-                  if (selectedCategory == 'Klien') projectColor = Colors.green;
-                  if (selectedCategory == 'Pribadi') projectColor = Colors.purple;
-
-                  setState(() {
-                    _projects.add(Project(
-                      title: titleController.text,
-                      category: selectedCategory,
-                      color: projectColor,
-                      tasks: [],
-                    ));
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('OmniSpace Dashboard'),
         centerTitle: true,
         elevation: 0,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _projects.length,
-        itemBuilder: (context, index) {
-          return _buildProjectCard(index);
-        },
-      ),
+      body: switch (projectsAsync) {
+        AsyncData(:final value) when value.isEmpty =>
+          _EmptyState(onAddPressed: () => _showAddProjectDialog(context, ref)),
+        AsyncData(:final value) => ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: value.length,
+            itemBuilder: (context, index) => _ProjectCard(project: value[index]),
+          ),
+        AsyncError(:final error) => _ErrorState(
+            message: error.toString(),
+            onRetry: () => ref.invalidate(projectsProvider),
+          ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddProjectDialog,
+        onPressed: () => _showAddProjectDialog(context, ref),
+        tooltip: 'Tambah Proyek',
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildProjectCard(int index) {
-    final project = _projects[index];
-    
-    // INI DIA PERUBAHANNYA: Bungkus Card dengan InkWell
-    return InkWell(
-      onTap: () {
-        // Pindah ke halaman detail dan kirim data project
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProjectDetailScreen(project: project),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Card(
-        elevation: 2,
-        margin: const EdgeInsets.only(bottom: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  void _showAddProjectDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController();
+    var selectedCategory = ProjectCategory.kuliah;
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Tambah Proyek Baru'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Judul Proyek',
+                    hintText: 'Misal: Belajar Dart',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<ProjectCategory>(
+                  initialValue: selectedCategory,
+                  decoration: const InputDecoration(labelText: 'Kategori'),
+                  items: [
+                    for (final category in ProjectCategory.values)
+                      DropdownMenuItem(
+                        value: category,
+                        child: Text(category.label),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setDialogState(() => selectedCategory = value);
+                    }
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final title = controller.text.trim();
+                  if (title.isEmpty) return;
+
+                  final repository =
+                      ref.read(projectRepositoryProvider);
+                  await repository.addProject(
+                    title: title,
+                    category: selectedCategory,
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                },
+                child: const Text('Simpan'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Kartu proyek tampil saat data sudah ada.
+class _ProjectCard extends ConsumerWidget {
+  const _ProjectCard({required this.project});
+
+  final Project project;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => context.go('/project/${project.id}'),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -185,20 +136,30 @@ class _TrackingScreenState extends State<TrackingScreen> {
                   Expanded(
                     child: Text(
                       project.title,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: project.color.withOpacity(0.2),
+                      color: project.color.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      project.category,
-                      style: TextStyle(color: project.color, fontWeight: FontWeight.bold, fontSize: 12),
+                      project.category.label,
+                      style: TextStyle(
+                        color: project.color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -218,28 +179,129 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 '${(project.progress * 100).toInt()}% Selesai',
                 style: TextStyle(color: Colors.grey[600], fontSize: 12),
               ),
-              const SizedBox(height: 12),
-              const Text('Checklist:', style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              ...List.generate(project.tasks.length, (taskIndex) {
-                final task = project.tasks[taskIndex];
-                return CheckboxListTile(
-                  title: Text(
-                    task.name,
-                    style: TextStyle(
-                      decoration: task.isDone ? TextDecoration.lineThrough : null,
-                      color: task.isDone ? Colors.grey : Colors.black,
+              if (project.tasks.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Checklist:',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                for (final task in project.tasks)
+                  CheckboxListTile(
+                    title: Text(
+                      task.name,
+                      style: TextStyle(
+                        decoration: task.isDone
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: task.isDone ? Colors.grey : Colors.black,
+                      ),
                     ),
+                    value: task.isDone,
+                    onChanged: (_) => _toggleTask(ref, task),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
                   ),
-                  value: task.isDone,
-                  onChanged: (val) => _toggleTask(index, taskIndex),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                );
-              }),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _toggleTask(WidgetRef ref, Task task) {
+    ref.read(projectRepositoryProvider).setTaskStatus(
+          task.id,
+          task.isDone ? TaskStatus.todo : TaskStatus.done,
+        );
+  }
+}
+
+/// Ditampilkan saat belum ada proyek sama sekali.
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.onAddPressed});
+
+  final VoidCallback onAddPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.space_dashboard_outlined,
+              size: 64,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Belum ada proyek',
+              style: theme.textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Buat proyek pertama untuk mulai tracking tugas.',
+              style: theme.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: onAddPressed,
+              icon: const Icon(Icons.add),
+              label: const Text('Tambah Proyek Pertama'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Ditampilkan saat gagal membaca database.
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
+            const SizedBox(height: 16),
+            Text(
+              'Gagal memuat data',
+              style: theme.textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: theme.textTheme.bodySmall,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Coba Lagi'),
+            ),
+          ],
         ),
       ),
     );
