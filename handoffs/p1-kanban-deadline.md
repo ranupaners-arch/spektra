@@ -1,16 +1,13 @@
 # P1: Kanban board + Deadline & Reminder
-Status: BERJALAN (inti selesai, belum commit) · Service: spektra (Flutter) · Diperbarui: 2026-09-23 11:00
-Referensi: PLAN.md P1 item 8-11 · Memory: Fix #2 (CHANGELOG_FIXES.md)
-
-## Sedang dikerjakan
-P1 inti sudah implement & lulus analisis+build web. Belum di-commit. P0 (f6b115b, 419911b, aec5af2) sudah push.
+Status: SELESAI (commit c1c8e6f, belum push) · Service: spektra (Flutter) · Diperbarui: 2026-09-23 11:40
+Referensi: PLAN.md P1 · commit c1c8e6f · Fix #2 (CHANGELOG_FIXES.md)
 
 ## Status terakhir (terbukti di mesin ini)
-- `flutter analyze`: No issues found.
-- `flutter build web`: sukses (36.6s); sqlite3.wasm + drift_worker.js ter-emit.
-- Smoke headless Chrome build/web: tidak ada error JS runtime; DOM memuat flutter-view.
+- `flutter analyze`: No issues found. · `flutter build web`: sukses.
+- Smoke headless Chrome build/web: tanpa error JS runtime.
 - `flutter test` MASIH GAGAL di mesin ini: native-asset objective_c (path_provider_foundation) tak bisa
   link libSystem.tbd SDK CommandLineTools 27. Isu toolchain Apple, bukan kode.
+- P1 sudah commit (c1c8e6f) tapi BELUM di-push.
 
 ## Yang dikerjakan di P1
 - Kanban 4 kolom (To Do/In Progress/Review/Done) di detail screen: horizontal scroll, LongPressDraggable +
@@ -29,10 +26,9 @@ P1 inti sudah implement & lulus analisis+build web. Belum di-commit. P0 (f6b115b
 - Deadline dihitung per hari kalender (bukan jam) via deadline_utils.
 
 ## Langkah berikutnya
-1. Commit P1 (belum di-commit). Setelah push, tutup handoff ini + tandai Fix #2 `✅ LIVE`.
-2. Test repository in-memory drift (moveTask/addTask/position) — masih menunggu toolchain mac diperbaiki, atau
-   coba `flutter test` lagi bila environment berubah.
-3. P2 lanjut: Present/Quiz Mode dari data nyata + mode switching FAB. DESIGN.md wajib sebelum polish UI.
+1. Push commit c1c8e6f bila sudah mantap; setelah dipush tutup handoff ini.
+2. Test repository in-memory drift (moveTask/addTask/position) — menunggu toolchain mac diperbaiki.
+3. Fokus sekarang: fase backend (lihat handoffs/backend-db-postgres.md); lalu P2 saat balik ke frontend.
 
 ## Jangan lakukan
 - Jangan klaim `flutter test` lulus di mesin ini (toolchain, bukan kode).

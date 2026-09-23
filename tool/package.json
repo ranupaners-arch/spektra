@@ -1,0 +1,13 @@
+{
+  "name": "spektra-db-tools",
+  "private": true,
+  "description": "CLI dev untuk apply/verifikasi migrasi Postgres lokal (skema portabel Spektra).",
+  "type": "module",
+  "scripts": {
+    "apply": "node apply_migrations.mjs",
+    "check": "node db_check.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
+  }
+}
