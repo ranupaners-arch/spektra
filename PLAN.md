@@ -93,8 +93,14 @@ UI (Riverpod providers)
 | P0 | 1-7 Fondasi (domain, drift, repository, riverpod, router, UI states) | ✅ selesai (f6b115b, aec5af2) |
 | P1 | 8-11 Kanban, deadline, persistence, progress/warna | ✅ selesai (c1c8e6f) |
 | Backend basis | Schema Postgres portabel + tooling migrasi/verifikasi | ✅ selesai (7b0c70d) — DBngin `spektra`:5432, DB `spektra`, cek 4/4 lolos |
-| P3 (parsial) | Supabase cloud: apply 0001+0002, URL+anon key, `supabase_flutter`, swap repository | ⏳ berikutnya (handoffs/backend-db-postgres.md) |
+| P3 (parsial) | Supabase cloud: apply 0001+0002+0003, auth email/password, `SupabaseProjectRepository` swap, realtime | 🟡 terimplementasi & terverifikasi server; **E2E user belum** (daftar→confirm email→login→kanban) — handoffs/backend-db-postgres.md |
+| P3 (sisa) | Anonymous untuk peserta quiz | ⏳ menyusul di fase kolaborasi |
 | P2 | Present/Quiz mode dari data nyata + mode switching | ⏳ setelah backend matang (DESIGN.md wajib dulu) |
+
+> **Catatan P3 (2026-09-23)**: cloud project `hidmfqgdjcwhhdmwxgzk` (ap-northeast-1).
+> Skema + RLS + realtime terpasang; auth gate & repository remote di kode (analyze/build ✅).
+> Email confirmation tetap ON. Fold remote = Session pooler IPv4 (`aws-0-ap-northeast-1.pooler.supabase.com:5432`),
+> karena host direct `db.<ref>` IPv6-only dan tak terjangkau mesin.
 
 ---
 

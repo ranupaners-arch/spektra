@@ -29,6 +29,19 @@ alter table public.projects enable row level security;
 alter table public.tasks    enable row level security;
 alter table public.profiles enable row level security;
 
+-- idempotent: drop dulu agar aman dijalankan ulang
+drop policy if exists "profiles: select own" on public.profiles;
+drop policy if exists "profiles: insert own" on public.profiles;
+drop policy if exists "profiles: update own" on public.profiles;
+drop policy if exists "projects: select own" on public.projects;
+drop policy if exists "projects: insert own" on public.projects;
+drop policy if exists "projects: update own" on public.projects;
+drop policy if exists "projects: delete own" on public.projects;
+drop policy if exists "tasks: select via project owner" on public.tasks;
+drop policy if exists "tasks: insert via project owner" on public.tasks;
+drop policy if exists "tasks: update via project owner" on public.tasks;
+drop policy if exists "tasks: delete via project owner" on public.tasks;
+
 -- profiles: user hanya mengelola profilnya sendiri
 create policy "profiles: select own"
     on public.profiles for select using (id = auth.uid());

@@ -58,21 +58,33 @@ delete from public.projects where title = 'Belajar Dart';
 select count(*) from public.tasks; -- kembali 0
 ```
 
-## Migrasi ke Supabase (P3)
+## Migrasi ke Supabase (P3) — SUDAH DILAKUKAN
 
-1. Buat project Supabase cloud.
-2. Apply `db/migrations/0001_init.sql` (core, tanpa RLS) di SQL editor.
-3. Apply `db/supabase/0002_auth_rls.sql` (profiles, owner_id, policies).
-4. Catat `Project URL` + `anon key` → inject ke app saat run/build:
+Project cloud aktif: `https://hidmfqgdjcwhhdmwxgzk.supabase.co` (region `ap-northeast-1`).
+Skema `0001` + `0002` + `0003` TERPASANG via `tool/apply_supabase.mjs` (koneksi langsung Postgres, bukan SQL editor). Verifikasi: tabel public `profiles, projects, tasks`; RLS on; realtime publication on; replica identity `full` → hapus/ubah task live-update.
 
-   ```
-   flutter run --dart-define=SUPABASE_URL=https://xxxx.supabase.co \
-               --dart-define=SUPABASE_ANON_KEY=eyJhbGciOi...
-   ```
+Cara re-apply skalaan (mis. nambah migrasi baru):
 
-   Contoh & catatan: `.env.example`. Tanpa kedua define, app tetap 100% lokal
-   (Drift) — `lib/core/config/supabase_config.dart` mengunci bootstrap.
-5. Nota: skema `auth.users` & `gen_random_uuid()` tersedia otomatis di Supabase.
+```
+cd tool
+SUPABASE_DB_HOST=aws-0-ap-northeast-1.pooler.supabase.com
+SUPABASE_DB_PORT=5432
+SUPABASE_DB_USER=postgres.hidmfqgdjcwhhdmwxgzk
+SUPABASE_DB_PASSWORD=...   node apply_supabase.mjs
+```
+
+Catatan koneksi cloud:
+- Host **direct** `db.<ref>.supabase.co` adalah **IPv6-only** dan tak terjangkau banyak jaringan → selalu pakai **Session pooler** (`aws-0-<region>.pooler.supabase.com:5432`). Ambil host/password asli dari Dashboard → Database → Connection.
+- Alternatif: apply via Dashboard → **SQL Editor** (copy-paste file), tanpa berbagi password.
+
+Run app dengan auth (register/login email+password):
+
+```
+flutter run -d chrome --dart-define=SUPABASE_URL=https://hidmfqgdjcwhhdmwxgzk.supabase.co \
+                     --dart-define=SUPABASE_ANON_KEY=eyJhbGciOi...
+```
+
+Tanpa kedua define, app tetap 100% lokal (Drift) — `lib/core/config/supabase_config.dart` mengunci bootstrap.
 
 ## Tidak dilakukan
 

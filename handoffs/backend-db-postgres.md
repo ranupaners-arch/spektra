@@ -1,28 +1,36 @@
 # Backend: Postgres lokal (DBngin) → Supabase
-Status: BERJALAN (basis schema lokal ✅; integrasi Supabase siap menunggu project cloud) · Service: backend · Diperbarui: 2026-09-23 12:00
-Referensi: docs/dev-db.md · db/migrations/0001_init.sql · db/supabase/0002_auth_rls.sql · .env.example · lib/core/config/supabase_config.dart · keputusan user "fokus backend dulu, frontend menyusul"
+Status: BERJALAN (skema + realtime + auth + repository DI-IMPLEMENTASI; menunggu verifikasi E2E user) · Service: backend · Diperbarui: 2026-09-23 14:30
+Referensi: docs/dev-db.md · db/migrations/0001_init.sql · db/supabase/0002_auth_rls.sql · db/supabase/0003_supabase_realtime.sql · tool/apply_supabase.mjs · lib/features/auth/ · lib/features/tracking/data/supabase_project_repository.dart · .env.local (SEKRET — jangan commit)
 
 ## Sedang dikerjakan
-Menunggu SATU aksi user: buat project Supabase cloud + kirim URL & anon key. Setelah itu: apply 0001+0002, auth, repository swap, verifikasi.
+Verifikasi E2E oleh user (register→confirm email→login→try kanban biar data nyangkut di cloud) — ini satu-satunya bloker tersisa sebelum "backend mateng".
 
-## Status terakhir (terbukti di mesin ini)
-- Instance DBngin: `spektra` (PostgreSQL 18.4_arm, port 5432, user postgres tanpa password, host 127.0.0.1) RUNNING. TablePlus terkoneksi.
-- `tool/apply_migrations.mjs` → DB `spektra` + `0001_init.sql` applied. `tool/db_check.mjs` → 4/4 lolos.
-- Supabase integration prep: `supabase_flutter ^2.17.2` dipasang; `lib/core/config/supabase_config.dart`
-  membaca `--dart-define SUPABASE_URL/SUPABASE_ANON_KEY`; `main()` hanya init Supabase bila terkonfigurasi.
-  `flutter analyze` No issues; `flutter build web` sukses. App tetap 100% lokal tanpa define.
+## Status terakhir (terbukti sesi ini)
+- Skema cloud TERPASANG di project `hidmfqgdjcwhhdmwxgzk` (region ap-northeast-1) via `tool/apply_supabase.mjs`:
+  0001 (projects/tasks) + 0002 (profiles/owner_id/RLS, idempotent) + 0003 (realtime publication + replica identity FULL).
+  Verifikasi: tabel public = profiles/projects/tasks; RLS aktif; policy 3/4/4; realtime publication ada; replident=f (FULL).
+- REST anon (tanpa login) → 200 `[]` untuk ketiga tabel → RLS benar memblokir. Auth endpoint live (login salah → 400 invalid_credentials).
+- Kode Flutter DI-IMPLEMENTASI & lulus `flutter analyze` (No issues) + `flutter build web` (dengan dart-define Supabase):
+  - `AuthController` (notifier riverpod 3) + `AuthScreen` (masuk/daftar, email-confirmation-aware) + auth gate di main.dart.
+  - `SupabaseProjectRepository` (implements ProjectRepository): watch via Realtime Channel + refetch 60s (embedded select `tasks(*)`, karena `.stream()` bawaan tak dukung embedded); mutasi pakai session Bearer + RLS.
+  - Repo swap otomatis: Supabase+login → remote; selain itu → Drift lokal. `projectRepositoryProvider` berubah.
+  - Logout button di dashboard (hanya muncul saat auth aktif).
+- Koneksi DB: host direct `db.<ref>` itu IPv6-only & tak terjangkau mesin → pakai **Session pooler** `aws-0-ap-northeast-1.pooler.supabase.com:5432`, user `postgres.hidmfqgdjcwhhdmwxgzk`.
 - `flutter test` MASIH gagal di mesin ini (toolchain Apple objective_c) — bukan kode.
+- Commit lokal: `ccd20af`, lalu batch sesi ini BELUM di-commit/push.
 
 ## Keputusan penting
-- Skema portabel (enum=smallint+CHECK+komentar; RLS/auth dipisah di db/supabase/, tidak jalan di lokal).
-- Anon key dipakai via `publishableKey:` (API baru supabase_flutter 2.17.2; `anonKey` deprecated).
-- Tanpa URL+key → app sliding ke local-first; tidak ada branch Supabase yang "setengah nyala".
+- Email confirmation tetap ON di project → user daftar via app, klik link di email.
+- Anon key disimpan di `.env.local` (gitignored) untuk sesi dev ini; untuk build: `--dart-define`.
+- Bila realtime channel error di web, fallback polling 60s tetap menjaga UI up-to-date.
 
-## Langkah berikutnya (BUTUH AKSI USER dulu)
-1. User: buat project di https://supabase.com/dashboard → pilih region & password DB →
-   kirim `Project URL` + `anon key` (Settings → API).
-2. Di SQL editor project: apply `db/migrations/0001_init.sql` lalu `db/supabase/0002_auth_rls.sql`.
-3. Jalankan app dengan `--dart-define` tersebut → verifikasi koneksi.
-4. Implementasi: `auth` (register/login email+password), `SupabaseProjectRepository` swap
-   (interface ProjectRepository, UI tak tersentuh).
-5. Verifikasi end-to-end → tandai "backend mateng" → balik fokus frontend (P2; DESIGN.md wajib dulu).
+## Langkah berikutnya
+1. (User) Jalankan `flutter run -d chrome --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...`
+   → daftar dengan email sendiri → konfirmasi email → masuk → buat proyek/task → cek muncul di dashboard Supabase (Table Editor) & di instance lain/logout saat disimulasikan.
+2. Setelah terverifikasi → tandai "backend mateng" di PLAN.md → balik fokus frontend (P2; DESIGN.md wajib dulu).
+3. Commit batch sesi ini + push (bila user setuju; jangan commit `.env.local`).
+
+## Jangan lakukan
+- Jangan commit `.env.local` / SUPABASE_DB_PASSWORD.
+- Jangan matikan email confirmation demi kemudahan tes.
+- Jangan host `db.<ref>.supabase.co` di tool migrasi — selalu pooler/session-pooler (IPv4).

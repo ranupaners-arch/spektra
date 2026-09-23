@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../auth/application/auth_controller.dart';
 import '../application/deadline_utils.dart';
 import '../application/project_colors.dart';
 import '../application/tracking_providers.dart';
@@ -13,12 +14,22 @@ class TrackingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(projectsProvider);
+    final authEnabled = ref.watch(authModuleEnabledProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Spektra Dashboard'),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          if (authEnabled)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Keluar',
+              onPressed: () =>
+                  ref.read(authControllerProvider.notifier).signOut(),
+            ),
+        ],
       ),
       body: switch (projectsAsync) {
         AsyncData(:final value) when value.isEmpty =>
