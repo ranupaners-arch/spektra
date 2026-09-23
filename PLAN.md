@@ -44,10 +44,14 @@ UI (Riverpod providers)
 
 ### P1: Personal MVP (minggu 1-2)
 
-8. **Kanban board**: 4 kolom (To Do, In Progress, Review, Done), geser task antar kolom.
-9. **Deadline & reminder**: field deadline + notifikasi H-1 & H-3 + banner overdue.
-10. Ganti semua data in-memory ke persisten Drift (tambah, hapus, toggle project & task).
-11. Progress bar & warna kategori dipertahankan dari data asli DB.
+~~8. **Kanban board**: 4 kolom (To Do, In Progress, Review, Done), geser task antar kolom.~~
+~~9. **Deadline & reminder**: field deadline + notifikasi H-1 & H-3 + banner overdue.~~
+~~10. Ganti semua data in-memory ke persisten Drift (tambah, hapus, toggle project & task).~~
+~~11. Progress bar & warna kategori dipertahankan dari data asli DB.~~
+
+> **Catatan P1 (2026-09-23)**: item 8-11 selesai (commit `c1c8e6f`). Konteks item 9:
+> banner overdue + reminder in-app H-1/H-3 jalan; **notifikasi push native ditunda**
+> (flutter_local_notifications belum dipasang), diputuskan sambil nunggu backend matang.
 
 ### P2: Modes dari data nyata (minggu 2-3)
 
@@ -77,6 +81,20 @@ UI (Riverpod providers)
 26. Google Calendar **two-way sync**.
 27. Dashboard analitik: tugas on-time, kontribusi anggota tim.
 28. Dark/light mode, offline-first penuh, polish performa.
+
+> **Keputusan pemilik (2026-09-23)**: prioritas kerja diubah menjadi **backend dulu,
+> frontend menyusul**. P3 bagian schema/Supabase dikerjakan lebih awal dari urutan
+> di atas; item fase lain tidak dibatalkan, hanya direskedul.
+
+## Status Pengerjaan (2026-09-23)
+
+| Fase | Item | Status |
+|---|---|---|
+| P0 | 1-7 Fondasi (domain, drift, repository, riverpod, router, UI states) | ✅ selesai (f6b115b, aec5af2) |
+| P1 | 8-11 Kanban, deadline, persistence, progress/warna | ✅ selesai (c1c8e6f) |
+| Backend basis | Schema Postgres portabel + tooling migrasi/verifikasi | ✅ selesai (7b0c70d) — DBngin `spektra`:5432, DB `spektra`, cek 4/4 lolos |
+| P3 (parsial) | Supabase cloud: apply 0001+0002, URL+anon key, `supabase_flutter`, swap repository | ⏳ berikutnya (handoffs/backend-db-postgres.md) |
+| P2 | Present/Quiz mode dari data nyata + mode switching | ⏳ setelah backend matang (DESIGN.md wajib dulu) |
 
 ---
 
