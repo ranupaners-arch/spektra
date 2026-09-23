@@ -23,10 +23,24 @@ abstract class ProjectRepository {
     required int projectId,
     required String name,
     DateTime? deadline,
+    TaskStatus status = TaskStatus.todo,
+    int? position,
   });
 
   /// Memindahkan task ke status kanban lain.
   Future<void> setTaskStatus(int taskId, TaskStatus status);
+
+  /// Memindahkan task ke status kanban lain + posisi di dalam kolom.
+  /// [position] adalah indeks tujuan di kolom baru (di-clamp otomatis).
+  Future<void> moveTask({
+    required int taskId,
+    required TaskStatus status,
+    required int position,
+  });
+
+  Future<void> setTaskDeadline(int taskId, DateTime? deadline);
+
+  Future<void> renameTask(int taskId, String name);
 
   Future<void> deleteTask(int taskId);
 }

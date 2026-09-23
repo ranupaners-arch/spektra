@@ -90,10 +90,13 @@ class DriftProjectRepository implements ProjectRepository {
     required int projectId,
     required String name,
     DateTime? deadline,
+    TaskStatus status = TaskStatus.todo,
+    int? position,
   }) async {
     final count = await (_db.selectOnly(_db.taskRows)
           ..addColumns([_db.taskRows.id.count()])
-          ..where(_db.taskRows.projectId.equals(projectId)))
+          ..where(_db.taskRows.projectId.equals(projectId) &
+              _db.taskRows.status.equals(status.dbValue)))
         .map((row) => row.read(_db.taskRows.id.count())!)
         .getSingle();
 
@@ -101,9 +104,9 @@ class DriftProjectRepository implements ProjectRepository {
           TaskRowsCompanion.insert(
             projectId: projectId,
             name: name,
-            status: TaskStatus.todo.dbValue,
+            status: status.dbValue,
             deadline: Value<DateTime?>(deadline),
-            position: Value<int>(count),
+            position: Value(position ?? count),
           ),
         );
   }
@@ -113,6 +116,88 @@ class DriftProjectRepository implements ProjectRepository {
     await (_db.update(_db.taskRows)
           ..where((row) => row.id.equals(taskId)))
         .write(TaskRowsCompanion(status: Value(status.dbValue)));
+  }
+
+  @override
+  Future<void> moveTask({
+    required int taskId,
+    required TaskStatus status,
+    required int position,
+  }) async {
+    await _db.transaction(() async {
+      final old =
+          await (_db.select(_db.taskRows)..where((row) => row.id.equals(taskId)))
+              .getSingle();
+      final oldStatus = TaskStatus.fromDb(old.status);
+
+      final all = await (_db.select(_db.taskRows)
+            ..where((row) => row.projectId.equals(old.projectId)))
+          .get();
+
+      final columns = <TaskStatus, List<TaskRecord>>{
+        for (final s in TaskStatus.values) s: [],
+      };
+      for (final row in all) {
+        if (row.id == taskId) continue;
+        columns[TaskStatus.fromDb(row.status)]!.add(row);
+      }
+      for (final list in columns.values) {
+        list.sort((a, b) {
+          final byPos = a.position.compareTo(b.position);
+          return byPos != 0 ? byPos : a.id.compareTo(b.id);
+        });
+      }
+
+      final target = columns[status]!;
+      final index = position.clamp(0, target.length);
+      target.insert(index, old);
+
+      Future<void> assignRow(
+        TaskRecord row,
+        int newPosition, {
+        TaskStatus? newStatus,
+      }) async {
+        if (row.position == newPosition &&
+            (newStatus == null || TaskStatus.fromDb(row.status) == newStatus)) {
+          return;
+        }
+        await (_db.update(_db.taskRows)..where((r) => r.id.equals(row.id)))
+            .write(TaskRowsCompanion(
+          status: newStatus == null
+              ? const Value.absent()
+              : Value(newStatus.dbValue),
+          position: Value(newPosition),
+        ));
+      }
+
+      final oldColumn = columns[oldStatus]!;
+      if (oldStatus == status) {
+        for (var i = 0; i < target.length; i++) {
+          await assignRow(target[i], i);
+        }
+      } else {
+        for (var i = 0; i < oldColumn.length; i++) {
+          await assignRow(oldColumn[i], i);
+        }
+        for (var i = 0; i < target.length; i++) {
+          await assignRow(target[i], i,
+              newStatus: target[i].id == taskId ? status : null);
+        }
+      }
+    });
+  }
+
+  @override
+  Future<void> setTaskDeadline(int taskId, DateTime? deadline) async {
+    await (_db.update(_db.taskRows)
+          ..where((row) => row.id.equals(taskId)))
+        .write(TaskRowsCompanion(deadline: Value<DateTime?>(deadline)));
+  }
+
+  @override
+  Future<void> renameTask(int taskId, String name) async {
+    await (_db.update(_db.taskRows)..where((row) => row.id.equals(taskId)))
+        .write(TaskRowsCompanion(name: Value(name)));
   }
 
   @override

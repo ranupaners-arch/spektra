@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../application/deadline_utils.dart';
 import '../application/project_colors.dart';
 import '../application/tracking_providers.dart';
 import '../domain/tracking_models.dart';
@@ -44,6 +45,7 @@ class TrackingScreen extends ConsumerWidget {
   void _showAddProjectDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
     var selectedCategory = ProjectCategory.kuliah;
+    DateTime? deadline;
 
     showDialog<void>(
       context: context,
@@ -80,6 +82,28 @@ class TrackingScreen extends ConsumerWidget {
                     }
                   },
                 ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final now = DateTime.now();
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: deadline ??
+                          DateTime(now.year, now.month, now.day + 1),
+                      firstDate: DateTime(now.year - 1),
+                      lastDate: DateTime(now.year + 5),
+                    );
+                    if (picked != null && context.mounted) {
+                      setDialogState(() => deadline = picked);
+                    }
+                  },
+                  icon: Icon(deadline == null
+                      ? Icons.event
+                      : Icons.event_available),
+                  label: Text(deadline == null
+                      ? 'Tambah Tenggat'
+                      : formatDeadline(deadline!)),
+                ),
               ],
             ),
             actions: [
@@ -97,6 +121,7 @@ class TrackingScreen extends ConsumerWidget {
                   await repository.addProject(
                     title: title,
                     category: selectedCategory,
+                    deadline: deadline,
                   );
                   if (context.mounted) Navigator.pop(context);
                 },
@@ -179,6 +204,7 @@ class _ProjectCard extends ConsumerWidget {
                 '${(project.progress * 100).toInt()}% Selesai',
                 style: TextStyle(color: Colors.grey[600], fontSize: 12),
               ),
+              ..._buildDeadlineInfo(project),
               if (project.tasks.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 const Text(
@@ -216,6 +242,84 @@ class _ProjectCard extends ConsumerWidget {
           task.id,
           task.isDone ? TaskStatus.todo : TaskStatus.done,
         );
+  }
+
+  List<Widget> _buildDeadlineInfo(Project project) {
+    final children = <Widget>[];
+
+    final projectDeadline = project.deadline;
+    if (projectDeadline != null) {
+      final state = deadlineState(projectDeadline);
+      final color = switch (state) {
+        DeadlineState.overdue => Colors.red,
+        DeadlineState.dueWithinOneDay => Colors.orange,
+        DeadlineState.dueWithinThreeDays => Colors.amber.shade700,
+        DeadlineState.upcoming || DeadlineState.none => Colors.grey[600],
+      };
+      children.add(Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(
+          children: [
+            Icon(Icons.event, size: 14, color: color),
+            const SizedBox(width: 4),
+            Text(
+              deadlineRelativeLabel(projectDeadline),
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: state == DeadlineState.overdue
+                    ? FontWeight.bold
+                    : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ));
+    }
+
+    final taskStates = countDeadlineStates(project.tasks);
+    if (taskStates[DeadlineState.overdue]! > 0) {
+      children.add(Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.red.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            '${taskStates[DeadlineState.overdue]} tugas terlambat',
+            style: const TextStyle(
+              color: Colors.red,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ));
+    } else if (taskStates[DeadlineState.dueWithinOneDay]! > 0) {
+      children.add(Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            '${taskStates[DeadlineState.dueWithinOneDay]} tugas '
+            'jatuh tempo besok',
+            style: const TextStyle(
+              color: Colors.orange,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ));
+    }
+
+    return children;
   }
 }
 
