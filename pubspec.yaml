@@ -39,6 +39,7 @@ dependencies:
   flutter_riverpod: ^3.0.0 # State management
   drift: ^2.30.0           # Database lokal (SQLite), relasional
   drift_flutter: ^0.3.1    # Setup drift lintas platform (native + web)
+  supabase_flutter: ^2.17.2
 
 dev_dependencies:
   flutter_test:

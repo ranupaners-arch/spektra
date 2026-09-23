@@ -63,7 +63,15 @@ select count(*) from public.tasks; -- kembali 0
 1. Buat project Supabase cloud.
 2. Apply `db/migrations/0001_init.sql` (core, tanpa RLS) di SQL editor.
 3. Apply `db/supabase/0002_auth_rls.sql` (profiles, owner_id, policies).
-4. Catat `Project URL` + `anon key` → dipakai `supabase_flutter` di app.
+4. Catat `Project URL` + `anon key` → inject ke app saat run/build:
+
+   ```
+   flutter run --dart-define=SUPABASE_URL=https://xxxx.supabase.co \
+               --dart-define=SUPABASE_ANON_KEY=eyJhbGciOi...
+   ```
+
+   Contoh & catatan: `.env.example`. Tanpa kedua define, app tetap 100% lokal
+   (Drift) — `lib/core/config/supabase_config.dart` mengunci bootstrap.
 5. Nota: skema `auth.users` & `gen_random_uuid()` tersedia otomatis di Supabase.
 
 ## Tidak dilakukan
